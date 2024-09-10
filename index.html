@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متابعة الختمة</title>
+    <style>
+        body {
+            font-family: 'Amiri', serif;
+            background-color: #f4f4f4;
+            color: #333;
+            direction: rtl;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            color: #006600;
+        }
+        label, input {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #006600;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #004d00;
+        }
+        .output {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        .debug {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>متابعة الختمة</h1>
+    <form id="reading-form">
+        <label for="sections-per-day">أدخل عدد أرباع وردك اليومى:</label>
+        <input type="number" id="sections-per-day" placeholder=" مثال: 3أرباع " />
+
+        <label for="start-date"> تاريخ بداية الختمة:</label>
+        <input type="date" id="start-date" />
+
+        <button type="button" onclick="calculateReading()">ابدأ المتابعة</button>
+    </form>
+
+    <div class="output" id="output">
+        <!-- The result will be displayed here -->
+    </div>
+
+    <div class="debug" id="debug">
+        <!-- Debug info will be displayed here -->
+    </div>
+</div>
+
+<script>
+    // بيانات الأرباع مضمنة في الكود كـمصفوفة
+    const quartersData = 
+    [
+    {
+        "quarter": 1,
+        "start": "سورة الفاتحة",
+        "start_ayah": 1,
+        "end": "سورة البقرة",
+        "end_ayah": 25
+    },
+    {
+        "quarter": 2,
+        "start": "سورة البقرة",
+        "start_ayah": 26,
+        "end": "سورة البقرة",
+        "end_ayah": 43
+    },
+    {
+        "quarter": 3,
+        "start": "سورة البقرة",
+        "start_ayah": 44,
+        "end": "سورة البقرة",
+        "end_ayah": 59
+    },
+    {
+        "quarter": 4,
+        "start": "سورة البقرة",
+        "start_ayah": 60,
+        "end": "سورة البقرة",
+        "end_ayah": 74
+    },
+    {
+        "quarter": 5,
+        "start": "سورة البقرة",
+        "start_ayah": 75,
+        "end": "سورة البقرة",
+        "end_ayah": 91
+    },
+    {
+        "quarter": 6,
+        "start": "سورة البقرة",
+        "start_ayah": 92,
+        "end": "سورة البقرة",
+        "end_ayah": 105
+    },
+    {
+        "quarter": 7,
+        "start": "سورة البقرة",
+        "start_ayah": 106,
+        "end": "سورة البقرة",
+        "end_ayah": 123
+    },
+    {
+        "quarter": 8,
+        "start": "سورة البقرة",
+        "start_ayah": 124,
+        "end": "سورة البقرة",
+        "end_ayah": 141
+    },
+    {
+        "quarter": 9,
+        "start": "سورة البقرة",
+        "start_ayah": 142,
+        "end": "سورة البقرة",
+        "end_ayah": 157
+    },
+    {
+        "quarter": 10,
+        "start": "سورة البقرة",
+        "start_ayah": 158,
+        "end": "سورة البقرة",
+        "end_ayah": 176
+    },
+    {
+        "quarter": 11,
+        "start": "سورة البقرة",
+        "start_ayah": 177,
+        "end": "سورة البقرة",
+        "end_ayah": 188
+    },
+    {
+        "quarter": 12,
+        "start": "سورة البقرة",
+        "start_ayah": 189,
+        "end": "سورة البقرة",
+        "end_ayah": 202
+    },
+    {
+        "quarter": 13,
+        "start": "سورة البقرة",
+        "start_ayah": 203,
+        "end": "سورة البقرة",
+        "end_ayah": 218
+    },
+    {
+        "quarter": 14,
+        "start": "سورة البقرة",
+        "start_ayah": 219,
+        "end": "سورة البقرة",
+        "end_ayah": 232
+    },
+    {
+        "quarter": 15,
+        "start": "سورة البقرة",
+        "start_ayah": 233,
+        "end": "سورة البقرة",
+        "end_ayah": 242
+    },
+    {
+        "quarter": 16,
+        "start": "سورة البقرة",
+        "start_ayah": 243,
+        "end": "سورة البقرة",
+        "end_ayah": 252
+    },
+    {
+        "quarter": 17,
+        "start": "سورة البقرة",
+        "start_ayah": 253,
+        "end": "سورة البقرة",
+        "end_ayah": 262
+    },
+    {
+        "quarter": 18,
+        "start": "سورة البقرة",
+        "start_ayah": 263,
+        "end": "سورة البقرة",
+        "end_ayah": 271
+    },
+    {
+        "quarter": 19,
+        "start": "سورة البقرة",
+        "start_ayah": 272,
+        "end": "سورة البقرة",
+        "end_ayah": 282
+    },
+    {
+        "quarter": 20,
+        "start": "سورة البقرة",
+        "start_ayah": 283,
+        "end": "سورة آل عمران",
+        "end_ayah": 14
+    },
+    {
+        "quarter": 21,
+        "start": "سورة آل عمران",
+        "start_ayah": 15,
+        "end": "سورة آل عمران",
+        "end_ayah": 32
+    },
+    {
+        "quarter": 22,
+        "start": "سورة آل عمران",
+        "start_ayah": 33,
+        "end": "سورة آل عمران",
+        "end_ayah": 51
+    },
+    {
+        "quarter": 23,
+        "start": "سورة آل عمران",
+        "start_ayah": 52,
+        "end": "سورة آل عمران",
+        "end_ayah": 74
+    },
+    {
+        "quarter": 24,
+        "start": "سورة آل عمران",
+        "start_ayah": 75,
+        "end": "سورة آل عمران",
+        "end_ayah": 92
+    },
+    {
+        "quarter": 25,
+        "start": "سورة آل عمران",
+        "start_ayah": 93,
+        "end": "سورة آل عمران",
+        "end_ayah": 112
+    },
+    {
+        "quarter": 26,
+        "start": "سورة آل عمران",
+        "start_ayah": 113,
+        "end": "سورة آل عمران",
+        "end_ayah": 132
+    },
+    {
+        "quarter": 27,
+        "start": "سورة آل عمران",
+        "start_ayah": 133,
+        "end": "سورة آل عمران",
+        "end_ayah": 152
+    },
+    {
+        "quarter": 28,
+        "start": "سورة آل عمران",
+        "start_ayah": 153,
+        "end": "سورة آل عمران",
+        "end_ayah": 170
+    },
+    {
+        "quarter": 29,
+        "start": "سورة آل عمران",
+        "start_ayah": 171,
+        "end": "سورة آل عمران",
+        "end_ayah": 185
+    },
+    {
+        "quarter": 30,
+        "start": "سورة آل عمران",
+        "start_ayah": 186,
+        "end": "سورة آل عمران",
+        "end_ayah": 200
+    },
+    {
+        "quarter": 31,
+        "start": "سورة النساء",
+        "start_ayah": 1,
+        "end": "سورة النساء",
+        "end_ayah": 11
+    },
+    {
+        "quarter": 32,
+        "start": "سورة النساء",
+        "start_ayah": 12,
+        "end": "سورة النساء",
+        "end_ayah": 23
+    },
+    {
+        "quarter": 33,
+        "start": "سورة النساء",
+        "start_ayah": 24,
+        "end": "سورة النساء",
+        "end_ayah": 35
+    },
+    {
+        "quarter": 34,
+        "start": "سورة النساء",
+        "start_ayah": 36,
+        "end": "سورة النساء",
+        "end_ayah": 57
+    },
+    {
+        "quarter": 35,
+        "start": "سورة النساء",
+        "start_ayah": 58,
+        "end": "سورة النساء",
+        "end_ayah": 73
+    },
+    {
+        "quarter": 36,
+        "start": "سورة النساء",
+        "start_ayah": 74,
+        "end": "سورة النساء",
+        "end_ayah": 87
+    },
+    {
+        "quarter": 37,
+        "start": "سورة النساء",
+        "start_ayah": 88,
+        "end": "سورة النساء",
+        "end_ayah": 99
+    },
+    {
+        "quarter": 38,
+        "start": "سورة النساء",
+        "start_ayah": 100,
+        "end": "سورة النساء",
+        "end_ayah": 113
+    },
+    {
+        "quarter": 39,
+        "start": "سورة النساء",
+        "start_ayah": 114,
+        "end": "سورة النساء",
+        "end_ayah": 134
+    },
+    {
+        "quarter": 40,
+        "start": "سورة النساء",
+        "start_ayah": 135,
+        "end": "سورة النساء",
+        "end_ayah": 147
+    },
+    {
+        "quarter": 41,
+        "start": "سورة النساء",
+        "start_ayah": 148,
+        "end": "سورة النساء",
+        "end_ayah": 162
+    },
+    {
+        "quarter": 42,
+        "start": "سورة النساء",
+        "start_ayah": 163,
+        "end": "سورة النساء",
+        "end_ayah": 176
+    },
+    {
+        "quarter": 43,
+        "start": "سورة المائدة",
+        "start_ayah": 1,
+        "end": "سورة المائدة",
+        "end_ayah": 11
+    },
+    {
+        "quarter": 44,
+        "start": "سورة المائدة",
+        "start_ayah": 12,
+        "end": "سورة المائدة",
+        "end_ayah": 26
+    },
+    {
+        "quarter": 45,
+        "start": "سورة المائدة",
+        "start_ayah": 27,
+        "end": "سورة المائدة",
+        "end_ayah": 40
+    },
+    {
+        "quarter": 46,
+        "start": "سورة المائدة",
+        "start_ayah": 41,
+        "end": "سورة المائدة",
+        "end_ayah": 50
+    },
+    {
+        "quarter": 47,
+        "start": "سورة المائدة",
+        "start_ayah": 51,
+        "end": "سورة المائدة",
+        "end_ayah": 66
+    },
+    {
+        "quarter": 48,
+        "start": "سورة المائدة",
+        "start_ayah": 67,
+        "end": "سورة المائدة",
+        "end_ayah": 81
+    },
+    {
+        "quarter": 49,
+        "start": "سورة المائدة",
+        "start_ayah": 82,
+        "end": "سورة المائدة",
+        "end_ayah": 96
+    },
+    {
+        "quarter": 50,
+        "start": "سورة المائدة",
+        "start_ayah": 97,
+        "end": "سورة المائدة",
+        "end_ayah": 108
+    },
+    {
+        "quarter": 51,
+        "start": "سورة المائدة",
+        "start_ayah": 109,
+        "end": "سورة الأنعام",
+        "end_ayah": 12
+    },
+    {
+        "quarter": 52,
+        "start": "سورة الأنعام",
+        "start_ayah": 13,
+        "end": "سورة الأنعام",
+        "end_ayah": 35
+    },
+    {
+        "quarter": 53,
+        "start": "سورة الأنعام",
+        "start_ayah": 36,
+        "end": "سورة الأنعام",
+        "end_ayah": 58
+    },
+    {
+        "quarter": 54,
+        "start": "سورة الأنعام",
+        "start_ayah": 59,
+        "end": "سورة الأنعام",
+        "end_ayah": 73
+    },
+    {
+        "quarter": 55,
+        "start": "سورة الأنعام",
+        "start_ayah": 74,
+        "end": "سورة الأنعام",
+        "end_ayah": 94
+    },
+    {
+        "quarter": 56,
+        "start": "سورة الأنعام",
+        "start_ayah": 95,
+        "end": "سورة الأنعام",
+        "end_ayah": 110
+    },
+    {
+        "quarter": 57,
+        "start": "سورة الأنعام",
+        "start_ayah": 111,
+        "end": "سورة الأنعام",
+        "end_ayah": 126
+    },
+    {
+        "quarter": 58,
+        "start": "سورة الأنعام",
+        "start_ayah": 127,
+        "end": "سورة الأنعام",
+        "end_ayah": 140
+    },
+    {
+        "quarter": 59,
+        "start": "سورة الأنعام",
+        "start_ayah": 141,
+        "end": "سورة الأنعام",
+        "end_ayah": 150
+    },
+    {
+        "quarter": 60,
+        "start": "سورة الأنعام",
+        "start_ayah": 151,
+        "end": "سورة الأنعام",
+        "end_ayah": 165
+    },
+    {
+        "quarter": 61,
+        "start": "سورة الأعراف",
+        "start_ayah": 1,
+        "end": "سورة الأعراف",
+        "end_ayah": 30
+    },
+    {
+        "quarter": 62,
+        "start": "سورة الأعراف",
+        "start_ayah": 31,
+        "end": "سورة الأعراف",
+        "end_ayah": 46
+    },
+    {
+        "quarter": 63,
+        "start": "سورة الأعراف",
+        "start_ayah": 47,
+        "end": "سورة الأعراف",
+        "end_ayah": 64
+    },
+    {
+        "quarter": 64,
+        "start": "سورة الأعراف",
+        "start_ayah": 65,
+        "end": "سورة الأعراف",
+        "end_ayah": 87
+    },
+    {
+        "quarter": 65,
+        "start": "سورة الأعراف",
+        "start_ayah": 88,
+        "end": "سورة الأعراف",
+        "end_ayah": 116
+    },
+    {
+        "quarter": 66,
+        "start": "سورة الأعراف",
+        "start_ayah": 117,
+        "end": "سورة الأعراف",
+        "end_ayah": 141
+    },
+    {
+        "quarter": 67,
+        "start": "سورة الأعراف",
+        "start_ayah": 142,
+        "end": "سورة الأعراف",
+        "end_ayah": 155
+    },
+    {
+        "quarter": 68,
+        "start": "سورة الأعراف",
+        "start_ayah": 156,
+        "end": "سورة الأعراف",
+        "end_ayah": 170
+    },
+    {
+        "quarter": 69,
+        "start": "سورة الأعراف",
+        "start_ayah": 171,
+        "end": "سورة الأعراف",
+        "end_ayah": 188
+    },
+    {
+        "quarter": 70,
+        "start": "سورة الأعراف",
+        "start_ayah": 189,
+        "end": "سورة الأعراف",
+        "end_ayah": 206
+    },
+    {
+        "quarter": 71,
+        "start": "سورة الأنفال",
+        "start_ayah": 1,
+        "end": "سورة الأنفال",
+        "end_ayah": 21
+    },
+    {
+        "quarter": 72,
+        "start": "سورة الأنفال",
+        "start_ayah": 22,
+        "end": "سورة الأنفال",
+        "end_ayah": 40
+    },
+    {
+        "quarter": 73,
+        "start": "سورة الأنفال",
+        "start_ayah": 41,
+        "end": "سورة الأنفال",
+        "end_ayah": 60
+    },
+    {
+        "quarter": 74,
+        "start": "سورة الأنفال",
+        "start_ayah": 61,
+        "end": "سورة الأنفال",
+        "end_ayah": 75
+    },
+    {
+        "quarter": 75,
+        "start": "سورة التوبة",
+        "start_ayah": 1,
+        "end": "سورة التوبة",
+        "end_ayah": 18
+    },
+    {
+        "quarter": 76,
+        "start": "سورة التوبة",
+        "start_ayah": 19,
+        "end": "سورة التوبة",
+        "end_ayah": 33
+    },
+    {
+        "quarter": 77,
+        "start": "سورة التوبة",
+        "start_ayah": 34,
+        "end": "سورة التوبة",
+        "end_ayah": 45
+    },
+    {
+        "quarter": 78,
+        "start": "سورة التوبة",
+        "start_ayah": 46,
+        "end": "سورة التوبة",
+        "end_ayah": 59
+    },
+    {
+        "quarter": 79,
+        "start": "سورة التوبة",
+        "start_ayah": 60,
+        "end": "سورة التوبة",
+        "end_ayah": 74
+    },
+    {
+        "quarter": 80,
+        "start": "سورة التوبة",
+        "start_ayah": 75,
+        "end": "سورة التوبة",
+        "end_ayah": 92
+    },
+    {
+        "quarter": 81,
+        "start": "سورة التوبة",
+        "start_ayah": 93,
+        "end": "سورة التوبة",
+        "end_ayah": 110
+    },
+    {
+        "quarter": 82,
+        "start": "سورة التوبة",
+        "start_ayah": 111,
+        "end": "سورة التوبة",
+        "end_ayah": 121
+    },
+    {
+        "quarter": 83,
+        "start": "سورة التوبة",
+        "start_ayah": 122,
+        "end": "سورة يونس",
+        "end_ayah": 10
+    },
+    {
+        "quarter": 84,
+        "start": "سورة يونس",
+        "start_ayah": 11,
+        "end": "سورة يونس",
+        "end_ayah": 25
+    },
+    {
+        "quarter": 85,
+        "start": "سورة يونس",
+        "start_ayah": 26,
+        "end": "سورة يونس",
+        "end_ayah": 52
+    },
+    {
+        "quarter": 86,
+        "start": "سورة يونس",
+        "start_ayah": 53,
+        "end": "سورة يونس",
+        "end_ayah": 70
+    },
+    {
+        "quarter": 87,
+        "start": "سورة يونس",
+        "start_ayah": 71,
+        "end": "سورة يونس",
+        "end_ayah": 89
+    },
+    {
+        "quarter": 88,
+        "start": "سورة يونس",
+        "start_ayah": 90,
+        "end": "سورة هود",
+        "end_ayah": 5
+    },
+    {
+        "quarter": 89,
+        "start": "سورة هود",
+        "start_ayah": 6,
+        "end": "سورة هود",
+        "end_ayah": 23
+    },
+    {
+        "quarter": 90,
+        "start": "سورة هود",
+        "start_ayah": 24,
+        "end": "سورة هود",
+        "end_ayah": 40
+    },
+    {
+        "quarter": 91,
+        "start": "سورة هود",
+        "start_ayah": 41,
+        "end": "سورة هود",
+        "end_ayah": 60
+    },
+    {
+        "quarter": 92,
+        "start": "سورة هود",
+        "start_ayah": 61,
+        "end": "سورة هود",
+        "end_ayah": 83
+    },
+    {
+        "quarter": 93,
+        "start": "سورة هود",
+        "start_ayah": 84,
+        "end": "سورة هود",
+        "end_ayah": 107
+    },
+    {
+        "quarter": 94,
+        "start": "سورة هود",
+        "start_ayah": 108,
+        "end": "سورة يوسف",
+        "end_ayah": 6
+    },
+    {
+        "quarter": 95,
+        "start": "سورة يوسف",
+        "start_ayah": 7,
+        "end": "سورة يوسف",
+        "end_ayah": 29
+    },
+    {
+        "quarter": 96,
+        "start": "سورة يوسف",
+        "start_ayah": 30,
+        "end": "سورة يوسف",
+        "end_ayah": 52
+    },
+    {
+        "quarter": 97,
+        "start": "سورة يوسف",
+        "start_ayah": 53,
+        "end": "سورة يوسف",
+        "end_ayah": 76
+    },
+    {
+        "quarter": 98,
+        "start": "سورة يوسف",
+        "start_ayah": 77,
+        "end": "سورة يوسف",
+        "end_ayah": 100
+    },
+    {
+        "quarter": 99,
+        "start": "سورة يوسف",
+        "start_ayah": 101,
+        "end": "سورة الرعد",
+        "end_ayah": 4
+    },
+    {
+        "quarter": 100,
+        "start": "سورة الرعد",
+        "start_ayah": 5,
+        "end": "سورة الرعد",
+        "end_ayah": 18
+    },
+    {
+        "quarter": 101,
+        "start": "سورة الرعد",
+        "start_ayah": 19,
+        "end": "سورة الرعد",
+        "end_ayah": 34
+    },
+    {
+        "quarter": 102,
+        "start": "سورة الرعد",
+        "start_ayah": 35,
+        "end": "سورة إبراهيم",
+        "end_ayah": 9
+    },
+    {
+        "quarter": 103,
+        "start": "سورة إبراهيم",
+        "start_ayah": 10,
+        "end": "سورة إبراهيم",
+        "end_ayah": 27
+    },
+    {
+        "quarter": 104,
+        "start": "سورة إبراهيم",
+        "start_ayah": 28,
+        "end": "سورة الحجر",
+        "end_ayah": 52
+    },
+    {
+        "quarter": 105,
+        "start": "سورة الحجر",
+        "start_ayah": 1,
+        "end": "سورة الحجر",
+        "end_ayah": 48
+    },
+    {
+        "quarter": 106,
+        "start": "سورة الحجر",
+        "start_ayah": 49,
+        "end": "سورة الحجر",
+        "end_ayah": 99
+    },
+    {
+        "quarter": 107,
+        "start": "سورة النحل",
+        "start_ayah": 1,
+        "end": "سورة النحل",
+        "end_ayah": 29
+    },
+    {
+        "quarter": 108,
+        "start": "سورة النحل",
+        "start_ayah": 30,
+        "end": "سورة النحل",
+        "end_ayah": 50
+    },
+    {
+        "quarter": 109,
+        "start": "سورة النحل",
+        "start_ayah": 51,
+        "end": "سورة النحل",
+        "end_ayah": 74
+    },
+    {
+        "quarter": 110,
+        "start": "سورة النحل",
+        "start_ayah": 75,
+        "end": "سورة النحل",
+        "end_ayah": 89
+    },
+    {
+        "quarter": 111,
+        "start": "سورة النحل",
+        "start_ayah": 90,
+        "end": "سورة النحل",
+        "end_ayah": 110
+    },
+    {
+        "quarter": 112,
+        "start": "سورة النحل",
+        "start_ayah": 111,
+        "end": "سورة النحل",
+        "end_ayah": 128
+    },
+    {
+        "quarter": 113,
+        "start": "سورة الإسراء",
+        "start_ayah": 1,
+        "end": "سورة الإسراء",
+        "end_ayah": 22
+    },
+    {
+        "quarter": 114,
+        "start": "سورة الإسراء",
+        "start_ayah": 23,
+        "end": "سورة الإسراء",
+        "end_ayah": 49
+    },
+    {
+        "quarter": 115,
+        "start": "سورة الإسراء",
+        "start_ayah": 50,
+        "end": "سورة الإسراء",
+        "end_ayah": 69
+    },
+    {
+        "quarter": 116,
+        "start": "سورة الإسراء",
+        "start_ayah": 70,
+        "end": "سورة الإسراء",
+        "end_ayah": 98
+    },
+    {
+        "quarter": 117,
+        "start": "سورة الإسراء",
+        "start_ayah": 99,
+        "end": "سورة الكهف",
+        "end_ayah": 16
+    },
+    {
+        "quarter": 118,
+        "start": "سورة الكهف",
+        "start_ayah": 17,
+        "end": "سورة الكهف",
+        "end_ayah": 31
+    },
+    {
+        "quarter": 119,
+        "start": "سورة الكهف",
+        "start_ayah": 32,
+        "end": "سورة الكهف",
+        "end_ayah": 50
+    },
+    {
+        "quarter": 120,
+        "start": "سورة الكهف",
+        "start_ayah": 51,
+        "end": "سورة الكهف",
+        "end_ayah": 74
+    },
+    {
+        "quarter": 121,
+        "start": "سورة الكهف",
+        "start_ayah": 75,
+        "end": "سورة الكهف",
+        "end_ayah": 98
+    },
+    {
+        "quarter": 122,
+        "start": "سورة الكهف",
+        "start_ayah": 99,
+        "end": "سورة مريم",
+        "end_ayah": 21
+    },
+    {
+        "quarter": 123,
+        "start": "سورة مريم",
+        "start_ayah": 22,
+        "end": "سورة مريم",
+        "end_ayah": 58
+    },
+    {
+        "quarter": 124,
+        "start": "سورة مريم",
+        "start_ayah": 59,
+        "end": "سورة مريم",
+        "end_ayah": 98
+    },
+    {
+        "quarter": 125,
+        "start": "سورة طه",
+        "start_ayah": 1,
+        "end": "سورة طه",
+        "end_ayah": 54
+    },
+    {
+        "quarter": 126,
+        "start": "سورة طه",
+        "start_ayah": 55,
+        "end": "سورة طه",
+        "end_ayah": 82
+    },
+    {
+        "quarter": 127,
+        "start": "سورة طه",
+        "start_ayah": 83,
+        "end": "سورة طه",
+        "end_ayah": 110
+    },
+    {
+        "quarter": 128,
+        "start": "سورة طه",
+        "start_ayah": 111,
+        "end": "سورة طه",
+        "end_ayah": 135
+    },
+    {
+        "quarter": 129,
+        "start": "سورة الأنبياء",
+        "start_ayah": 1,
+        "end": "سورة الأنبياء",
+        "end_ayah": 28
+    },
+    {
+        "quarter": 130,
+        "start": "سورة الأنبياء",
+        "start_ayah": 29,
+        "end": "سورة الأنبياء",
+        "end_ayah": 50
+    },
+    {
+        "quarter": 131,
+        "start": "سورة الأنبياء",
+        "start_ayah": 51,
+        "end": "سورة الأنبياء",
+        "end_ayah": 82
+    },
+    {
+        "quarter": 132,
+        "start": "سورة الأنبياء",
+        "start_ayah": 83,
+        "end": "سورة الأنبياء",
+        "end_ayah": 112
+    },
+    {
+        "quarter": 133,
+        "start": "سورة الحج",
+        "start_ayah": 1,
+        "end": "سورة الحج",
+        "end_ayah": 18
+    },
+    {
+        "quarter": 134,
+        "start": "سورة الحج",
+        "start_ayah": 19,
+        "end": "سورة الحج",
+        "end_ayah": 37
+    },
+    {
+        "quarter": 135,
+        "start": "سورة الحج",
+        "start_ayah": 38,
+        "end": "سورة الحج",
+        "end_ayah": 59
+    },
+    {
+        "quarter": 136,
+        "start": "سورة الحج",
+        "start_ayah": 60,
+        "end": "سورة الحج",
+        "end_ayah": 78
+    },
+    {
+        "quarter": 137,
+        "start": "سورة المؤمنون",
+        "start_ayah": 1,
+        "end": "سورة المؤمنون",
+        "end_ayah": 35
+    },
+    {
+        "quarter": 138,
+        "start": "سورة المؤمنون",
+        "start_ayah": 36,
+        "end": "سورة المؤمنون",
+        "end_ayah": 74
+    },
+    {
+        "quarter": 139,
+        "start": "سورة المؤمنون",
+        "start_ayah": 75,
+        "end": "سورة المؤمنون",
+        "end_ayah": 118
+    },
+    {
+        "quarter": 140,
+        "start": "سورة النور",
+        "start_ayah": 1,
+        "end": "سورة النور",
+        "end_ayah": 20
+    },
+    {
+        "quarter": 141,
+        "start": "سورة النور",
+        "start_ayah": 21,
+        "end": "سورة النور",
+        "end_ayah": 34
+    },
+    {
+        "quarter": 142,
+        "start": "سورة النور",
+        "start_ayah": 35,
+        "end": "سورة النور",
+        "end_ayah": 52
+    },
+    {
+        "quarter": 143,
+        "start": "سورة النور",
+        "start_ayah": 53,
+        "end": "سورة النور",
+        "end_ayah": 64
+    },
+    {
+        "quarter": 144,
+        "start": "سورة الفرقان",
+        "start_ayah": 1,
+        "end": "سورة الفرقان",
+        "end_ayah": 20
+    },
+    {
+        "quarter": 145,
+        "start": "سورة الفرقان",
+        "start_ayah": 21,
+        "end": "سورة الفرقان",
+        "end_ayah": 52
+    },
+    {
+        "quarter": 146,
+        "start": "سورة الفرقان",
+        "start_ayah": 53,
+        "end": "سورة الفرقان",
+        "end_ayah": 77
+    },
+    {
+        "quarter": 147,
+        "start": "سورة الشعراء",
+        "start_ayah": 1,
+        "end": "سورة الشعراء",
+        "end_ayah": 51
+    },
+    {
+        "quarter": 148,
+        "start": "سورة الشعراء",
+        "start_ayah": 52,
+        "end": "سورة الشعراء",
+        "end_ayah": 110
+    },
+    {
+        "quarter": 149,
+        "start": "سورة الشعراء",
+        "start_ayah": 111,
+        "end": "سورة الشعراء",
+        "end_ayah": 180
+    },
+    {
+        "quarter": 150,
+        "start": "سورة الشعراء",
+        "start_ayah": 181,
+        "end": "سورة الشعراء",
+        "end_ayah": 227
+    },
+    {
+        "quarter": 151,
+        "start": "سورة النمل",
+        "start_ayah": 1,
+        "end": "سورة النمل",
+        "end_ayah": 26
+    },
+    {
+        "quarter": 152,
+        "start": "سورة النمل",
+        "start_ayah": 27,
+        "end": "سورة النمل",
+        "end_ayah": 55
+    },
+    {
+        "quarter": 153,
+        "start": "سورة النمل",
+        "start_ayah": 56,
+        "end": "سورة النمل",
+        "end_ayah": 81
+    },
+    {
+        "quarter": 154,
+        "start": "سورة النمل",
+        "start_ayah": 82,
+        "end": "سورة القصص",
+        "end_ayah": 11
+    },
+    {
+        "quarter": 155,
+        "start": "سورة القصص",
+        "start_ayah": 12,
+        "end": "سورة القصص",
+        "end_ayah": 28
+    },
+    {
+        "quarter": 156,
+        "start": "سورة القصص",
+        "start_ayah": 29,
+        "end": "سورة القصص",
+        "end_ayah": 50
+    },
+    {
+        "quarter": 157,
+        "start": "سورة القصص",
+        "start_ayah": 51,
+        "end": "سورة القصص",
+        "end_ayah": 75
+    },
+    {
+        "quarter": 158,
+        "start": "سورة القصص",
+        "start_ayah": 76,
+        "end": "سورة القصص",
+        "end_ayah": 88
+    },
+    {
+        "quarter": 159,
+        "start": "سورة العنكبوت",
+        "start_ayah": 1,
+        "end": "سورة العنكبوت",
+        "end_ayah": 25
+    },
+    {
+        "quarter": 160,
+        "start": "سورة العنكبوت",
+        "start_ayah": 26,
+        "end": "سورة العنكبوت",
+        "end_ayah": 45
+    },
+    {
+        "quarter": 161,
+        "start": "سورة العنكبوت",
+        "start_ayah": 46,
+        "end": "سورة العنكبوت",
+        "end_ayah": 69
+    },
+    {
+        "quarter": 162,
+        "start": "سورة الروم",
+        "start_ayah": 1,
+        "end": "سورة الروم",
+        "end_ayah": 30
+    },
+    {
+        "quarter": 163,
+        "start": "سورة الروم",
+        "start_ayah": 31,
+        "end": "سورة الروم",
+        "end_ayah": 53
+    },
+    {
+        "quarter": 164,
+        "start": "سورة الروم",
+        "start_ayah": 54,
+        "end": "سورة لقمان",
+        "end_ayah": 21
+    },
+    {
+        "quarter": 165,
+        "start": "سورة لقمان",
+        "start_ayah": 22,
+        "end": "سورة السجدة",
+        "end_ayah": 10
+    },
+    {
+        "quarter": 166,
+        "start": "سورة السجدة",
+        "start_ayah": 11,
+        "end": "سورة السجدة",
+        "end_ayah": 30
+    },
+    {
+        "quarter": 167,
+        "start": "سورة الأحزاب",
+        "start_ayah": 1,
+        "end": "سورة الأحزاب",
+        "end_ayah": 17
+    },
+    {
+        "quarter": 168,
+        "start": "سورة الأحزاب",
+        "start_ayah": 18,
+        "end": "سورة الأحزاب",
+        "end_ayah": 30
+    },
+    {
+        "quarter": 169,
+        "start": "سورة الأحزاب",
+        "start_ayah": 31,
+        "end": "سورة الأحزاب",
+        "end_ayah": 50
+    },
+    {
+        "quarter": 170,
+        "start": "سورة الأحزاب",
+        "start_ayah": 51,
+        "end": "سورة الأحزاب",
+        "end_ayah": 59
+    },
+    {
+        "quarter": 171,
+        "start": "سورة الأحزاب",
+        "start_ayah": 60,
+        "end": "سورة سبأ",
+        "end_ayah": 9
+    },
+    {
+        "quarter": 172,
+        "start": "سورة سبأ",
+        "start_ayah": 10,
+        "end": "سورة سبأ",
+        "end_ayah": 23
+    },
+    {
+        "quarter": 173,
+        "start": "سورة سبأ",
+        "start_ayah": 24,
+        "end": "سورة سبأ",
+        "end_ayah": 45
+    },
+    {
+        "quarter": 174,
+        "start": "سورة سبأ",
+        "start_ayah": 46,
+        "end": "سورة فاطر",
+        "end_ayah": 14
+    },
+    {
+        "quarter": 175,
+        "start": "سورة فاطر",
+        "start_ayah": 15,
+        "end": "سورة فاطر",
+        "end_ayah": 40
+    },
+    {
+        "quarter": 176,
+        "start": "سورة فاطر",
+        "start_ayah": 41,
+        "end": "سورة يس",
+        "end_ayah": 27
+    },
+    {
+        "quarter": 177,
+        "start": "سورة يس",
+        "start_ayah": 28,
+        "end": "سورة يس",
+        "end_ayah": 59
+    },
+    {
+        "quarter": 178,
+        "start": "سورة يس",
+        "start_ayah": 60,
+        "end": "سورة الصافات",
+        "end_ayah": 21
+    },
+    {
+        "quarter": 179,
+        "start": "سورة الصافات",
+        "start_ayah": 22,
+        "end": "سورة الصافات",
+        "end_ayah": 82
+    },
+    {
+        "quarter": 180,
+        "start": "سورة الصافات",
+        "start_ayah": 83,
+        "end": "سورة الصافات",
+        "end_ayah": 144
+    },
+    {
+        "quarter": 181,
+        "start": "سورة الصافات",
+        "start_ayah": 145,
+        "end": "سورة ص",
+        "end_ayah": 20
+    },
+    {
+        "quarter": 182,
+        "start": "سورة ص",
+        "start_ayah": 21,
+        "end": "سورة ص",
+        "end_ayah": 51
+    },
+    {
+        "quarter": 183,
+        "start": "سورة ص",
+        "start_ayah": 52,
+        "end": "سورة الزمر",
+        "end_ayah": 7
+    },
+    {
+        "quarter": 184,
+        "start": "سورة الزمر",
+        "start_ayah": 8,
+        "end": "سورة الزمر",
+        "end_ayah": 31
+    },
+    {
+        "quarter": 185,
+        "start": "سورة الزمر",
+        "start_ayah": 32,
+        "end": "سورة الزمر",
+        "end_ayah": 52
+    },
+    {
+        "quarter": 186,
+        "start": "سورة الزمر",
+        "start_ayah": 53,
+        "end": "سورة الزمر",
+        "end_ayah": 75
+    },
+    {
+        "quarter": 187,
+        "start": "سورة غافر",
+        "start_ayah": 1,
+        "end": "سورة غافر",
+        "end_ayah": 20
+    },
+    {
+        "quarter": 188,
+        "start": "سورة غافر",
+        "start_ayah": 21,
+        "end": "سورة غافر",
+        "end_ayah": 40
+    },
+    {
+        "quarter": 189,
+        "start": "سورة غافر",
+        "start_ayah": 41,
+        "end": "سورة غافر",
+        "end_ayah": 65
+    },
+    {
+        "quarter": 190,
+        "start": "سورة غافر",
+        "start_ayah": 66,
+        "end": "سورة فصلت",
+        "end_ayah": 8
+    },
+    {
+        "quarter": 191,
+        "start": "سورة فصلت",
+        "start_ayah": 9,
+        "end": "سورة فصلت",
+        "end_ayah": 24
+    },
+    {
+        "quarter": 192,
+        "start": "سورة فصلت",
+        "start_ayah": 25,
+        "end": "سورة فصلت",
+        "end_ayah": 46
+    },
+    {
+        "quarter": 193,
+        "start": "سورة فصلت",
+        "start_ayah": 47,
+        "end": "سورة الشورى",
+        "end_ayah": 12
+    },
+    {
+        "quarter": 194,
+        "start": "سورة الشورى",
+        "start_ayah": 13,
+        "end": "سورة الشورى",
+        "end_ayah": 26
+    },
+    {
+        "quarter": 195,
+        "start": "سورة الشورى",
+        "start_ayah": 27,
+        "end": "سورة الشورى",
+        "end_ayah": 50
+    },
+    {
+        "quarter": 196,
+        "start": "سورة الشورى",
+        "start_ayah": 51,
+        "end": "سورة الزخرف",
+        "end_ayah": 23
+    },
+    {
+        "quarter": 197,
+        "start": "سورة الزخرف",
+        "start_ayah": 24,
+        "end": "سورة الزخرف",
+        "end_ayah": 56
+    },
+    {
+        "quarter": 198,
+        "start": "سورة الزخرف",
+        "start_ayah": 57,
+        "end": "سورة الدخان",
+        "end_ayah": 16
+    },
+    {
+        "quarter": 199,
+        "start": "سورة الدخان",
+        "start_ayah": 17,
+        "end": "سورة الجاثية",
+        "end_ayah": 11
+    },
+    {
+        "quarter": 200,
+        "start": "سورة الجاثية",
+        "start_ayah": 12,
+        "end": "سورة الجاثية",
+        "end_ayah": 37
+    },
+    {
+        "quarter": 201,
+        "start": "سورة الأحقاف",
+        "start_ayah": 1,
+        "end": "سورة الأحقاف",
+        "end_ayah": 20
+    },
+    {
+        "quarter": 202,
+        "start": "سورة الأحقاف",
+        "start_ayah": 21,
+        "end": "سورة محمد",
+        "end_ayah": 9
+    },
+    {
+        "quarter": 203,
+        "start": "سورة محمد",
+        "start_ayah": 10,
+        "end": "سورة محمد",
+        "end_ayah": 32
+    },
+    {
+        "quarter": 204,
+        "start": "سورة محمد",
+        "start_ayah": 33,
+        "end": "سورة الفتح",
+        "end_ayah": 17
+    },
+    {
+        "quarter": 205,
+        "start": "سورة الفتح",
+        "start_ayah": 18,
+        "end": "سورة الفتح",
+        "end_ayah": 29
+    },
+    {
+        "quarter": 206,
+        "start": "سورة الحجرات",
+        "start_ayah": 1,
+        "end": "سورة الحجرات",
+        "end_ayah": 13
+    },
+    {
+        "quarter": 207,
+        "start": "سورة الحجرات",
+        "start_ayah": 14,
+        "end": "سورة ق",
+        "end_ayah": 26
+    },
+    {
+        "quarter": 208,
+        "start": "سورة ق",
+        "start_ayah": 27,
+        "end": "سورة الذاريات",
+        "end_ayah": 30
+    },
+    {
+        "quarter": 209,
+        "start": "سورة الذاريات",
+        "start_ayah": 31,
+        "end": "سورة الطور",
+        "end_ayah": 23
+    },
+    {
+        "quarter": 210,
+        "start": "سورة الطور",
+        "start_ayah": 24,
+        "end": "سورة النجم",
+        "end_ayah": 25
+    },
+    {
+        "quarter": 211,
+        "start": "سورة النجم",
+        "start_ayah": 26,
+        "end": "سورة القمر",
+        "end_ayah": 8
+    },
+    {
+        "quarter": 212,
+        "start": "سورة القمر",
+        "start_ayah": 9,
+        "end": "سورة القمر",
+        "end_ayah": 55
+    },
+    {
+        "quarter": 213,
+        "start": "سورة الرحمن",
+        "start_ayah": 1,
+        "end": "سورة الرحمن",
+        "end_ayah": 78
+    },
+    {
+        "quarter": 214,
+        "start": "سورة الواقعة",
+        "start_ayah": 1,
+        "end": "سورة الواقعة",
+        "end_ayah": 74
+    },
+    {
+        "quarter": 215,
+        "start": "سورة الواقعة",
+        "start_ayah": 75,
+        "end": "سورة الحديد",
+        "end_ayah": 15
+    },
+    {
+        "quarter": 216,
+        "start": "سورة الحديد",
+        "start_ayah": 16,
+        "end": "سورة الحديد",
+        "end_ayah": 29
+    },
+    {
+        "quarter": 217,
+        "start": "سورة المجادلة",
+        "start_ayah": 1,
+        "end": "سورة المجادلة",
+        "end_ayah": 13
+    },
+    {
+        "quarter": 218,
+        "start": "سورة المجادلة",
+        "start_ayah": 14,
+        "end": "سورة الحشر",
+        "end_ayah": 10
+    },
+    {
+        "quarter": 219,
+        "start": "سورة الحشر",
+        "start_ayah": 11,
+        "end": "سورة الممتحنة",
+        "end_ayah": 6
+    },
+    {
+        "quarter": 220,
+        "start": "سورة الممتحنة",
+        "start_ayah": 7,
+        "end": "سورة الصف",
+        "end_ayah": 14
+    },
+    {
+        "quarter": 221,
+        "start": "سورة الجمعة",
+        "start_ayah": 1,
+        "end": "سورة المنافقون",
+        "end_ayah": 3
+    },
+    {
+        "quarter": 222,
+        "start": "سورة المنافقون",
+        "start_ayah": 4,
+        "end": "سورة التغابن",
+        "end_ayah": 18
+    },
+    {
+        "quarter": 223,
+        "start": "سورة الطلاق",
+        "start_ayah": 1,
+        "end": "سورة الطلاق",
+        "end_ayah": 12
+    },
+    {
+        "quarter": 224,
+        "start": "سورة التحريم",
+        "start_ayah": 1,
+        "end": "سورة التحريم",
+        "end_ayah": 12
+    },
+    {
+        "quarter": 225,
+        "start": "سورة الملك",
+        "start_ayah": 1,
+        "end": "سورة الملك",
+        "end_ayah": 30
+    },
+    {
+        "quarter": 226,
+        "start": "سورة القلم",
+        "start_ayah": 1,
+        "end": "سورة القلم",
+        "end_ayah": 52
+    },
+    {
+        "quarter": 227,
+        "start": "سورة الحاقة",
+        "start_ayah": 1,
+        "end": "سورة المعارج",
+        "end_ayah": 18
+    },
+    {
+        "quarter": 228,
+        "start": "سورة المعارج",
+        "start_ayah": 19,
+        "end": "سورة نوح",
+        "end_ayah": 28
+    },
+    {
+        "quarter": 229,
+        "start": "سورة الجن",
+        "start_ayah": 1,
+        "end": "سورة المزمل",
+        "end_ayah": 19
+    },
+    {
+        "quarter": 230,
+        "start": "سورة المزمل",
+        "start_ayah": 20,
+        "end": "سورة المدثر",
+        "end_ayah": 56
+    },
+    {
+        "quarter": 231,
+        "start": "سورة القيامة",
+        "start_ayah": 1,
+        "end": "سورة الانسان",
+        "end_ayah": 18
+    },
+    {
+        "quarter": 232,
+        "start": "سورة الانسان",
+        "start_ayah": 19,
+        "end": "سورة المرسلات",
+        "end_ayah": 50
+    },
+    {
+        "quarter": 233,
+        "start": "سورة النبأ",
+        "start_ayah": 1,
+        "end": "سورة النازاعات",
+        "end_ayah": 46
+    },
+    {
+        "quarter": 234,
+        "start": "سورة عبس",
+        "start_ayah": 1,
+        "end": "سورة التكوير",
+        "end_ayah": 29
+    },
+    {
+        "quarter": 235,
+        "start": "سورة الانفطار",
+        "start_ayah": 1,
+        "end": "سورة المطففين",
+        "end_ayah": 36
+    },
+    {
+        "quarter": 236,
+        "start": "سورة الانشقاق",
+        "start_ayah": 1,
+        "end": "سورة الطارق",
+        "end_ayah": 17
+    },
+    {
+        "quarter": 237,
+        "start": "سورة الاعلى",
+        "start_ayah": 1,
+        "end": "سورة الفجر",
+        "end_ayah": 30
+    },
+    {
+        "quarter": 238,
+        "start": "سورة البلد",
+        "start_ayah": 1,
+        "end": "سورة الضحى ",
+        "end_ayah": 11
+    },
+    {
+        "quarter": 239,
+        "start": "سورة الشرح",
+        "start_ayah": 1,
+        "end": "سورة العاديات",
+        "end_ayah": 8
+    },
+    {
+        "quarter": 240,
+        "start": "سورة العاديات",
+        "start_ayah": 9,
+        "end": "سورة الناس",
+        "end_ayah": 6
+    }
+];
+
+
+    // عند تحميل الصفحة، نقوم باسترجاع البيانات المخزنة في localStorage (إن وجدت)
+    // window.onload = function() {
+    //     const savedSectionsPerDay = localStorage.getItem('sectionsPerDay');
+    //     const savedStartDate = localStorage.getItem('startDate');
+
+    //     if (savedSectionsPerDay) {
+    //         document.getElementById('sections-per-day').value = savedSectionsPerDay;
+    //     }
+
+    //     if (savedStartDate) {
+    //         document.getElementById('start-date').value = savedStartDate;
+    //     }
+    // }
+
+    /////////////////////
+
+    // عند تحميل الصفحة، نقوم باسترجاع البيانات المخزنة في localStorage (إن وجدت)
+    window.onload = function() {
+        const savedSectionsPerDay = localStorage.getItem('sectionsPerDay');
+        const savedStartDate = localStorage.getItem('startDate');
+
+        if (savedSectionsPerDay) {
+            document.getElementById('sections-per-day').value = savedSectionsPerDay;
+        }
+
+        if (savedStartDate) {
+            document.getElementById('start-date').value = savedStartDate;
+        }
+    }
+
+    /////////////////////
+
+    // Calculate the current reading section
+    function calculateReading() {
+        const sectionsPerDay = document.getElementById('sections-per-day').value;
+        const startDateInput = document.getElementById('start-date').value;
+
+        if (!startDateInput || sectionsPerDay <= 0) {
+            alert('يرجى إدخال عدد الأرباع وتاريخ البداية بشكل صحيح.');
+            return;
+        }
+
+        // حفظ القيم في localStorage بعد كل إدخال
+        localStorage.setItem('sectionsPerDay', sectionsPerDay);
+        localStorage.setItem('startDate', startDateInput);
+
+        const startDate = new Date(startDateInput);
+        const today = new Date();
+        
+        // Check if start date is in the future
+        if (startDate > today) {
+            displayMessage("تاريخ البدء يجب أن يكون في الماضي أو اليوم.");
+            return;
+        }
+
+        // حساب عدد الأيام بين اليوم وتاريخ البدء
+        const timeDiff = today - startDate;
+        const daysPassed = Math.floor(timeDiff / (1000 * 60 * 60 * 24)) + 1; // Adding 1 to include the current day
+
+        // حساب إجمالي الأرباع التي يجب قراءتها
+        const totalQuartersRead = daysPassed * sectionsPerDay;
+
+        // Display debugging info
+        displayDebugInfo(sectionsPerDay, startDateInput, daysPassed, totalQuartersRead);
+
+        // البحث عن الربع المناسب بناءً على إجمالي الأرباع
+        const currentQuarter = quartersData.find(q => q.quarter === parseInt(totalQuartersRead));
+
+        if (!currentQuarter) {
+            displayMessage("لقد انتهيت من قراءة القرآن أو أن الرقم لا يتطابق مع بيانات الربع.");
+        } else {
+            // displayMessage(`سوف تقرأ اليوم بإذن الله من الآية رقم ${currentQuarter.start_ayah} من ${currentQuarter.start} إلى الآية رقم ${currentQuarter.end_ayah} من ${currentQuarter.end}.`);
+            displayMessage(`سوف تقرأ اليوم بإذن الله إلى الآية رقم ${currentQuarter.end_ayah} من  ${currentQuarter.end}.`);
+
+        }
+    }
+
+    // Display the reading result
+    function displayMessage(message) {
+        const output = document.getElementById('output');
+        output.innerHTML = message;
+    }
+
+    // Display debugging info
+    function displayDebugInfo(sectionsPerDay, startDateInput, daysPassed, totalQuartersRead) {
+        const debug = document.getElementById('debug');
+        debug.innerHTML = `
+            <strong> تفاصيل  الختمة:</strong><br>
+            عدد الأرباع اليومية: ${sectionsPerDay}<br>
+            تاريخ البدء: ${startDateInput}<br>
+            عدد الأيام منذ تاريخ البدء: ${daysPassed} يوم<br>
+            إجمالي الأرباع التي يجب قراءتها: ${totalQuartersRead}
+        `;
+    }
+</script>
+
+</body>
+</html>
