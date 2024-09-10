@@ -1807,9 +1807,20 @@
         localStorage.setItem('sectionsPerDay', sectionsPerDay);
         localStorage.setItem('startDate', startDateInput);
 
-        const startDate = new Date(startDateInput);
-        const today = new Date();
+        // const startDate = new Date(startDateInput);
+        // const today = new Date();
         
+
+        // تحويل تاريخ البدء إلى كائن تاريخ وتصفير الوقت
+    const startDate = new Date(startDateInput);
+    startDate.setHours(0, 0, 0, 0); // تصفير الوقت في تاريخ البدء
+
+    // الحصول على تاريخ اليوم وتصفير الوقت
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // تصفير الوقت في تاريخ اليوم
+
+
+    
         // Check if start date is in the future
         if (startDate > today) {
             displayMessage("تاريخ البدء يجب أن يكون في الماضي أو اليوم.");
